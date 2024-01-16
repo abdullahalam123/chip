@@ -5,6 +5,7 @@ import React, { useState, useEffect, ChangeEvent, useRef } from "react";
 export default function Home() {
   const allItems = [
     "Biru Shai",
+    "Biru Shai",
     "Biru Shok",
     "Shika Nara",
     "Shika Nara Miri Naru Patra",
@@ -20,6 +21,8 @@ export default function Home() {
   const [inputValue, setInputValue] = useState<string>("");
   const [selectedItems, setSelectedItems] = useState<string[]>([]); // items in the
   const [availableItems, setAvailableItems] = useState<string[]>(allItems); // items that can be selected
+  const [backspaceFirstClick, setBackspaceFirstClick] =
+    useState<boolean>(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const filteredItems = availableItems.filter((item) =>
@@ -28,6 +31,7 @@ export default function Home() {
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
+    setBackspaceFirstClick(false);
   };
 
   const handleItemClick = (item: string) => {
@@ -36,6 +40,7 @@ export default function Home() {
       availableItems.filter((availableItem) => availableItem !== item)
     );
     setInputValue("");
+    setBackspaceFirstClick(false);
   };
 
   const handleChipClose = (item: string) => {
@@ -51,9 +56,14 @@ export default function Home() {
       inputValue === "" &&
       selectedItems.length > 0
     ) {
-      const lastSelectedItem = selectedItems[selectedItems.length - 1];
-      setSelectedItems(selectedItems.slice(0, -1));
-      setAvailableItems([...availableItems, lastSelectedItem]);
+      if (backspaceFirstClick) {
+        const lastSelectedItem = selectedItems[selectedItems.length - 1];
+        setSelectedItems(selectedItems.slice(0, -1));
+        setAvailableItems([...availableItems, lastSelectedItem]);
+        setBackspaceFirstClick(false);
+      } else {
+        setBackspaceFirstClick(true);
+      }
     }
   };
 
@@ -72,7 +82,11 @@ export default function Home() {
           {selectedItems.map((item, index) => (
             <div
               key={index}
-              className="inline-flex items-center bg-gray-200 rounded-full px-3 py-1 m-1"
+              className={`inline-flex items-center ${
+                backspaceFirstClick && index === selectedItems.length - 1
+                  ? "border-2 border-blue-500"
+                  : ""
+              } bg-gray-200 rounded-full px-3 py-1 m-1`}
             >
               <span className="text-[#5f6368]">{item}</span>
               <span
