@@ -1,70 +1,120 @@
 "use client";
 
+import Image from "next/image";
 import React, { useState, useEffect, ChangeEvent, useRef } from "react";
+import { RxCross2 } from "react-icons/rx";
+interface Item {
+  id: number;
+  name: string;
+  email: string;
+  image: string;
+}
 
-export default function Home() {
-  const allItems = [
-    "Biru Shai",
-    "Biru Shai",
-    "Biru Shok",
-    "Shika Nara",
-    "Shika Nara Miri Naru Patra",
-    "Holio",
-    "Miranda",
-    "Koro",
-    "Naro",
-    "Milop",
-    "Sunita",
-    "Lori",
+export default function Test() {
+  const allItems: Item[] = [
+    {
+      id: 1,
+      name: "John Doe",
+      email: "john.doe@gmail.com",
+      image: "https://bit.ly/dan-abramov",
+    },
+    {
+      id: 2,
+      name: "Joseph Doe",
+      email: "jane.doe@gmail.com",
+      image: "https://bit.ly/kent-c-dodds",
+    },
+    {
+      id: 3,
+      name: "Harris Smith",
+      email: "alice.smith@gmail.com",
+      image: "https://bit.ly/ryan-florence",
+    },
+    {
+      id: 4,
+      name: "Bob Johnson",
+      email: "bob.johnson@gmail.com",
+      image: "https://bit.ly/prosper-baba",
+    },
+    {
+      id: 5,
+      name: "Charlie Brown",
+      email: "charlie.brown@gmail.com",
+      image: "https://bit.ly/code-beast",
+    },
+    {
+      id: 6,
+      name: "David Wilson",
+      email: "david.wilson@gmail.com",
+      image: "https://bit.ly/sage-adebayo",
+    },
   ];
 
   const [inputValue, setInputValue] = useState<string>("");
-  const [selectedItems, setSelectedItems] = useState<string[]>([]); // items in the
-  const [availableItems, setAvailableItems] = useState<string[]>(allItems); // items that can be selected
-  const [backspaceFirstClick, setBackspaceFirstClick] =
-    useState<boolean>(false);
+  const [selectedItems, setSelectedItems] = useState<Item[]>([]); // items in the
+  const [availableItems, setAvailableItems] = useState<Item[]>(allItems); // items that can be selected
+  const [backspaceClicked, setBackspaceClicked] = useState<boolean>(false);
+  const [isDropdownVisible, setIsDropdownVisible] = useState<boolean>(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const filteredItems = availableItems.filter((item) =>
-    item.toLowerCase().includes(inputValue.toLowerCase())
+    item?.name.toLowerCase().includes(inputValue.toLowerCase())
   );
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
-    setBackspaceFirstClick(false);
+    setBackspaceClicked(false); // Reset backspaceClicked when input changes
   };
 
-  const handleItemClick = (item: string) => {
+  const handleItemClick = (item: Item) => {
     setSelectedItems([...selectedItems, item]);
     setAvailableItems(
-      availableItems.filter((availableItem) => availableItem !== item)
+      availableItems.filter((availableItem) => availableItem?.id !== item.id)
     );
     setInputValue("");
-    setBackspaceFirstClick(false);
+    setBackspaceClicked(false);
+    setIsDropdownVisible(false);
   };
 
-  const handleChipClose = (item: string) => {
+  const handleChipClose = (item: Item) => {
     setSelectedItems(
-      selectedItems.filter((selectedItem) => selectedItem !== item)
+      selectedItems.filter((selectedItem) => selectedItem.id !== item.id)
     );
     setAvailableItems([...availableItems, item]);
   };
 
   const handleBackspace = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (
-      e.key === "Backspace" &&
-      inputValue === "" &&
-      selectedItems.length > 0
-    ) {
-      if (backspaceFirstClick) {
+    if (e.key === "Backspace" && inputValue === "") {
+      if (backspaceClicked) {
+        // Remove the last selected item
         const lastSelectedItem = selectedItems[selectedItems.length - 1];
         setSelectedItems(selectedItems.slice(0, -1));
         setAvailableItems([...availableItems, lastSelectedItem]);
-        setBackspaceFirstClick(false);
+        setBackspaceClicked(false);
       } else {
-        setBackspaceFirstClick(true);
+        // Highlight the last selected item with a blue border
+        setBackspaceClicked(true);
       }
     }
+  };
+
+  const handleInputClick = () => {
+    setIsDropdownVisible(true);
+  };
+
+  const handleFocusClick = () => {
+    setIsDropdownVisible(true);
+
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  };
+
+  const handleInputOutsideClick = () => {
+    setTimeout(() => {
+      setIsDropdownVisible(false);
+      setBackspaceClicked(false);
+    }, 500);
   };
 
   useEffect(() => {
@@ -76,48 +126,80 @@ export default function Home() {
 
   return (
     <main className="flex justify-center items-center flex-col h-screen w-screen gap-5">
-      <div className="flex w-[500px] border-solid  border-b-2 border-blue-500 ">
+      <div
+        onClick={handleFocusClick}
+        className="flex w-[37.5rem] border-solid pb-2 border-b-2 border-blue-500 cursor-pointer
+      "
+      >
         {/* Chip */}
         <div>
           {selectedItems.map((item, index) => (
             <div
               key={index}
               className={`inline-flex items-center ${
-                backspaceFirstClick && index === selectedItems.length - 1
+                backspaceClicked && index === selectedItems.length - 1
                   ? "border-2 border-blue-500"
                   : ""
-              } bg-gray-200 rounded-full px-3 py-1 m-1`}
+              } bg-gray-200 ml-2 rounded-full`}
             >
-              <span className="text-[#5f6368]">{item}</span>
-              <span
-                className="text-[#5f6368] cursor-pointer ml-2"
-                onClick={() => handleChipClose(item)}
-              >
-                X
-              </span>
+              <Image
+                className="rounded-full"
+                src={item.image}
+                width={42}
+                height={42}
+                alt={item.name}
+              />
+              <div className="px-3 py-1 flex justify-center items-center">
+                <span className="text-[#5f6368] ">{item.name}</span>
+                <span
+                  className="text-[#5f6368] cursor-pointer ml-1"
+                  onClick={() => handleChipClose(item)}
+                >
+                  <RxCross2 size="1.5rem" />
+                </span>
+              </div>
             </div>
           ))}
 
           <input
+            ref={inputRef}
             onKeyDown={handleBackspace}
+            onClick={handleInputClick}
+            onBlur={handleInputOutsideClick}
             value={inputValue}
             onChange={handleInputChange}
             type="text"
             placeholder="Add new user"
             required
-            className="w-[120px] appearance-none border-none bg-transparent text-black focus:outline-none"
+            className="ml-3 w-[7.5rem] bg-transparent text-black focus:outline-none"
           />
         </div>
       </div>
 
       {/* Dropdown */}
-      <div className="w-[500px]  border-solid text-red-800">
-        {filteredItems.map((item, index) => (
-          <div key={index} onClick={() => handleItemClick(item)}>
-            {item}
-          </div>
-        ))}
-      </div>
+      {isDropdownVisible && filteredItems.length > 0 && (
+        <div className="w-[37.5rem] max-h-[21.875rem] border-2 overflow-y-scroll shadow-lg">
+          {filteredItems.map((item, index) => (
+            <div
+              className="hover:bg-[#e1e1e1] h-10 flex flex-center gap-4 items-center p-8 cursor-pointer"
+              key={index}
+              onClick={() => handleItemClick(item)}
+            >
+              <div className="flex gap-2 justify-center items-center">
+                <Image
+                  className="border-2 rounded-full"
+                  src={item.image}
+                  width="42"
+                  height="42"
+                  alt={item.name}
+                />
+                <span className="font-semibold">{item.name}</span>
+              </div>
+              <span className="text-gray-500">{item.email}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </main>
   );
 }
